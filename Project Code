@@ -1,0 +1,224 @@
+#include <stdio.h>
+#include <string.h>
+
+#define ROWS 2
+#define COLS 5
+
+// Structure
+struct Seat {
+    int status;        // 0 = empty, 1 = booked
+    char name[20];
+};
+
+// Function prototypes
+void mainMenu(struct Seat s[ROWS][COLS]);
+void userMenu(struct Seat s[ROWS][COLS]);
+void adminMenu(struct Seat s[ROWS][COLS]);
+void display(struct Seat s[ROWS][COLS]);
+void book(struct Seat s[ROWS][COLS]);
+void cancel(struct Seat s[ROWS][COLS]);
+void saveToFile(struct Seat s[ROWS][COLS]);
+void loadFromFile(struct Seat s[ROWS][COLS]);
+
+// ---------------- MAIN ----------------
+int main() {
+    struct Seat seats[ROWS][COLS] = {0};
+    mainMenu(seats);
+    return 0;
+}
+
+// ---------------- MAIN MENU ----------------
+void mainMenu(struct Seat s[ROWS][COLS]) {
+    int choice;
+    char password[20];
+
+    while (1) {
+        printf("\n--- Library System Login ---\n");
+        printf("1. Admin Login\n");
+        printf("2. User\n");
+        printf("3. Exit\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            printf("Enter Admin Password: ");
+            scanf("%s", password);
+
+            if (strcmp(password, "admin123") == 0) {
+                adminMenu(s);
+            } else {
+                printf("Wrong password!\n");
+            }
+        }
+        else if (choice == 2) {
+            userMenu(s);
+        }
+        else if (choice == 3) {
+            printf("Exiting...\n");
+            break;
+        }
+        else {
+            printf("Invalid choice!\n");
+        }
+    }
+}
+
+// ---------------- ADMIN MENU ----------------
+void adminMenu(struct Seat s[ROWS][COLS]) {
+    int choice;
+
+    while (1) {
+        printf("\n--- Admin Menu ---\n");
+        printf("1. View Seats\n");
+        printf("2. Save Data\n");
+        printf("3. Load Data\n");
+        printf("4. Back\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            display(s);
+        }
+        else if (choice == 2) {
+            saveToFile(s);
+        }
+        else if (choice == 3) {
+            loadFromFile(s);
+        }
+        else if (choice == 4) {
+            break;
+        }
+        else {
+            printf("Invalid!\n");
+        }
+    }
+}
+
+// ---------------- USER MENU ----------------
+void userMenu(struct Seat s[ROWS][COLS]) {
+    int choice;
+
+    while (1) {
+        printf("\n--- User Menu ---\n");
+        printf("1. View Seats\n");
+        printf("2. Book Seat\n");
+        printf("3. Cancel Seat\n");
+        printf("4. Back\n");
+        printf("Enter choice: ");
+        scanf("%d", &choice);
+
+        if (choice == 1) {
+            display(s);
+        }
+        else if (choice == 2) {
+            book(s);
+        }
+        else if (choice == 3) {
+            cancel(s);
+        }
+        else if (choice == 4) {
+            break;
+        }
+        else {
+            printf("Invalid!\n");
+        }
+    }
+}
+
+// ---------------- DISPLAY ----------------
+void display(struct Seat s[ROWS][COLS]) {
+    printf("\n--- Library Seats ---\n");
+
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            if (s[i][j].status == 0)
+                printf("[A] ");
+            else
+                printf("[B:%s] ", s[i][j].name);
+        }
+        printf("\n");
+    }
+}
+
+// ---------------- BOOK SEAT ----------------
+void book(struct Seat s[ROWS][COLS]) {
+    int r, c;
+
+    printf("Row (0-%d): ", ROWS - 1);
+    scanf("%d", &r);
+
+    printf("Column (0-%d): ", COLS - 1);
+    scanf("%d", &c);
+
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) {
+        printf("Invalid input!\n");
+        return;
+    }
+
+    if (s[r][c].status == 1) {
+        printf("Already booked!\n");
+    } else {
+        printf("Enter name: ");
+        scanf("%s", s[r][c].name);
+
+        s[r][c].status = 1;
+        printf("Seat booked!\n");
+    }
+}
+
+// ---------------- CANCEL SEAT ----------------
+void cancel(struct Seat s[ROWS][COLS]) {
+    int r, c;
+
+    printf("Row: ");
+    scanf("%d", &r);
+
+    printf("Column: ");
+    scanf("%d", &c);
+
+    if (r < 0 || r >= ROWS || c < 0 || c >= COLS) {
+        printf("Invalid input!\n");
+        return;
+    }
+
+    if (s[r][c].status == 0) {
+        printf("Already empty!\n");
+    } else {
+        s[r][c].status = 0;
+        strcpy(s[r][c].name, "");
+        printf("Cancelled!\n");
+    }
+}
+
+// ---------------- SAVE FILE ----------------
+void saveToFile(struct Seat s[ROWS][COLS]) {
+    FILE *fp = fopen("library.txt", "w");
+
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            fprintf(fp, "%d %s\n", s[i][j].status, s[i][j].name);
+        }
+    }
+
+    fclose(fp);
+    printf("Data saved!\n");
+}
+
+// ---------------- LOAD FILE ----------------
+void loadFromFile(struct Seat s[ROWS][COLS]) {
+    FILE *fp = fopen("library.txt", "r");
+
+    if (fp == NULL) {
+        printf("File not found!\n");
+        return;
+    }
+
+    for (int i = 0; i < ROWS; i++) {
+        for (int j = 0; j < COLS; j++) {
+            fscanf(fp, "%d %s", &s[i][j].status, s[i][j].name);
+        }
+    }
+
+    fclose(fp);
+    printf("Data loaded!\n");
+}
